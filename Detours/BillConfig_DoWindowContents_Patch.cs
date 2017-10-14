@@ -43,17 +43,34 @@ namespace ImprovedWorkbenches
             const float middleColumn = columnWidth + 34f;
             const float buttonHeight = 30f;
 
-            var storeRect = new Rect(middleColumn + 2f, inRect.yMin + 114f,
+            var storeRect = new Rect(middleColumn + 3f, inRect.yMin + 114f,
                 columnWidth, buttonHeight);
             var allStockpiles = Find.VisibleMap.zoneManager.AllZones.OfType<Zone_Stockpile>();
 
             if (Widgets.ButtonText(storeRect, "null"))
             {
-                var storeOptionList = new List<FloatMenuOption>
+                var storeOptionList = new List<FloatMenuOption>();
+
+                var builtInStoremodesQry =
+                    from bsm in DefDatabase<BillStoreModeDef>.AllDefs
+                    orderby bsm.listOrder
+                    select bsm;
+
+                foreach (var storeModeDef in builtInStoremodesQry)
                 {
-                    new FloatMenuOption(
-                        "Best", delegate { extendedBillData.RemoveTakeToStockpile(); })
-                };
+                    var smLocal = storeModeDef;
+                    var smLabel = ("BillStoreMode_" + storeModeDef).Translate();
+                    storeOptionList.Add(
+                        new FloatMenuOption(
+                            smLabel,
+                            delegate
+                            {
+                                billRaw.storeMode = smLocal;
+                                extendedBillData.RemoveTakeToStockpile();
+                            }
+                        )
+                    );
+                }
 
                 foreach (Zone_Stockpile stockpile in allStockpiles)
                 {
@@ -65,8 +82,6 @@ namespace ImprovedWorkbenches
 
                 Find.WindowStack.Add(new FloatMenu(storeOptionList));
             }
-            TooltipHandler.TipRegion(storeRect,
-                "Crafter will take final product to specified stockpile");
         }
 
         [HarmonyPostfix]
@@ -173,6 +188,23 @@ namespace ImprovedWorkbenches
                     Find.WindowStack.Add(new FloatMenu(potentialWorkerList));
                 }
                 TooltipHandler.TipRegion(workerButtonRect, "Restrict job to specific colonist");
+            }
+
+            // Custom take to stockpile, overlay dummy button
+            {
+                var storeRect = new Rect(middleColumn + 3f, inRect.yMin + 114f,
+                    columnWidth, 30f);
+
+                if (billRaw.storeMode != BillStoreModeDefOf.BestStockpile)
+                    extendedBillData.RemoveTakeToStockpile();
+
+                var label = extendedBillData.UsesTakeToStockpile()
+                    ? extendedBillData.CurrentTakeToStockpileLabel()
+                    : ("BillStoreMode_" + billRaw.storeMode).Translate();
+
+                Widgets.ButtonText(storeRect, label);
+                TooltipHandler.TipRegion(storeRect,
+                    "Crafter will take final product to specified stockpile");
             }
 
             // Filter copy/paste buttons
