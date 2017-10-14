@@ -23,10 +23,7 @@ namespace ImprovedWorkbenches
 
             ShowCustomTakeToStockpileMenu(billRaw, inRect);
 
-            if (!Main.Instance.ShouldShowIngredientCount())
-                return true;
-
-            Main.Instance.IsRootBillFilterBeingDrawn = true;
+            Main.Instance.OnProductionDialogBeingShown();
 
             return true;
         }
@@ -34,9 +31,6 @@ namespace ImprovedWorkbenches
         // Specific storage stockpile
         private static void ShowCustomTakeToStockpileMenu(Bill_Production billRaw, Rect inRect)
         {
-            if (billRaw.storeMode != BillStoreModeDefOf.BestStockpile)
-                return;
-
             if (!ExtendedBillDataStorage.CanOutputBeFiltered(billRaw))
                 return;
 
@@ -53,7 +47,7 @@ namespace ImprovedWorkbenches
                 columnWidth, buttonHeight);
             var allStockpiles = Find.VisibleMap.zoneManager.AllZones.OfType<Zone_Stockpile>();
 
-            if (Widgets.ButtonText(storeRect, extendedBillData.CurrentTakeToStockpileLabel()))
+            if (Widgets.ButtonText(storeRect, "null"))
             {
                 var storeOptionList = new List<FloatMenuOption>
                 {
