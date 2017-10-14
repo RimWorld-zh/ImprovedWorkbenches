@@ -74,8 +74,15 @@ namespace ImprovedWorkbenches
 
                 foreach (Zone_Stockpile stockpile in allStockpiles)
                 {
+                    var label = "Take to " + stockpile.label;
                     var option = new FloatMenuOption(
-                        stockpile.label, delegate { extendedBillData.SetTakeToStockpile(stockpile); });
+                        label,
+                        delegate
+                        {
+                            extendedBillData.SetTakeToStockpile(stockpile);
+                            billRaw.storeMode = BillStoreModeDefOf.BestStockpile;
+                        }
+                    );
 
                     storeOptionList.Add(option);
                 }
@@ -194,9 +201,6 @@ namespace ImprovedWorkbenches
             {
                 var storeRect = new Rect(middleColumn + 3f, inRect.yMin + 114f,
                     columnWidth, 30f);
-
-                if (billRaw.storeMode != BillStoreModeDefOf.BestStockpile)
-                    extendedBillData.RemoveTakeToStockpile();
 
                 var label = extendedBillData.UsesTakeToStockpile()
                     ? extendedBillData.CurrentTakeToStockpileLabel()
